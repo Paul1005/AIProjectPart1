@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ShipCard : MonoBehaviour {
+    public int pointValue;
 	public string type;
 	public int hits;
 	public int speed;
