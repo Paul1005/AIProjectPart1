@@ -13,10 +13,14 @@ public class ShipCard : MonoBehaviour {
 	public int frontArmour;
 	public int turrets;
     public ArrayList weapons;
+    public Vector3 previousPosition;
+    public float totalRotation;
+
 	// Use this for initialization
 	void Start () {
-		
-	}
+        previousPosition = gameObject.transform.position;
+        totalRotation = 0;
+    }
 	
 	// Update is called once per frame
 	void Update () {
