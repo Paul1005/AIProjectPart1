@@ -24,6 +24,13 @@ public class ShipCard : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+        if(shields < 0)
+        {
+            shields = 0;
+        }
+		if (hits == 0)
+        {
+            Destroy(gameObject);
+        }
 	}
 }
