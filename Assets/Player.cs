@@ -5,87 +5,151 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
 
-    private ShipCard[] fleet;
+    private ShipCard[] playerFleet;
+    private ShipCard[] enemyFleet;
     private bool isTurn;
     private List<string> phase = new List<string>();
+    int shipNum = 0;
+    int phaseNum = 0;
     // Use this for initialization
     void Start()
     {
-        fleet = GetComponentsInChildren<ShipCard>();
+        playerFleet = GetComponentsInChildren<ShipCard>();
+        GameObject enemyPlayer = GameObject.Find("Player2");
+        enemyFleet = enemyPlayer.GetComponentsInChildren<ShipCard>();
         isTurn = true;
         phase.Add("movement");
         phase.Add("shooting");
         phase.Add("ordinance");
+        shipNum = 0;
+        phaseNum = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
-        /*while (isTurn)
-        {
-            isTurn = false;
-        }*/
-
-        int shipNum = 0;
-        int phaseNum = 0;
         if (phase[phaseNum] == "movement")
         {
             int turnDistance = 0;
 
-            if (fleet[shipNum].type == "Battleship")
+            if (playerFleet[shipNum].type == "Battleship")
             {
                 turnDistance = 15;
             }
-            else if (fleet[shipNum].type == "Cruiser")
+            else if (playerFleet[shipNum].type == "Cruiser")
             {
                 turnDistance = 10;
             }
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                if ((fleet[shipNum].gameObject.transform.position - fleet[shipNum].previousPosition).magnitude < (float)fleet[shipNum].speed / 10)
+                if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude < (float)playerFleet[shipNum].speed / 10)
                 {
-                    fleet[shipNum].gameObject.transform.position += fleet[shipNum].gameObject.transform.right * 0.015f;
+                    playerFleet[shipNum].gameObject.transform.position += playerFleet[shipNum].gameObject.transform.right * 0.015f;
                 }
 
             }
             else if (Input.GetKey(KeyCode.LeftArrow))
             {
-                if ((fleet[shipNum].gameObject.transform.position - fleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
                 {
-                    if (fleet[shipNum].totalRotation < fleet[shipNum].turns)
+                    if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
                     {
-                        fleet[shipNum].totalRotation += 0.375f;
-                        fleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, 0.375f));
+                        playerFleet[shipNum].totalRotation += 0.375f;
+                        playerFleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, 0.375f));
                     }
                 }
             }
             else if (Input.GetKey(KeyCode.RightArrow))
             {
-                if ((fleet[shipNum].gameObject.transform.position - fleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
                 {
-                    if (fleet[shipNum].totalRotation < fleet[shipNum].turns)
+                    if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
                     {
-                        fleet[shipNum].totalRotation += 0.375f;
-                        fleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, -0.375f));
+                        playerFleet[shipNum].totalRotation += 0.375f;
+                        playerFleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, -0.375f));
+                    }
+                }
+            }
+            else if (Input.GetKey(KeyCode.KeypadEnter))
+            {
+                print((float)(playerFleet[shipNum].speed / 2) / 10);
+                print((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude);
+
+                if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((float)playerFleet[shipNum].speed / 2) / 10)
+                {
+                    print(shipNum < playerFleet.Length - 1);
+                    if (shipNum < playerFleet.Length - 1)
+                    {
+                        shipNum++;
+                    }
+                    else if (shipNum == playerFleet.Length - 1)
+                    {
+                        phaseNum++;
+                        shipNum = 0;
+                    }
+                    else if (phaseNum == phase.Count - 1)
+                    {
+                        //next players turn
                     }
                 }
             }
         }
         else if (phase[phaseNum] == "shooting")
         {
-            WeaponCard[] weapons = fleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
+            WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
+            foreach (WeaponCard shipWeapon in shipWeapons)
+            {
+                foreach(ShipCard ship in enemyFleet)
+                {
+                    if (Vector3.Distance(playerFleet[shipNum].transform.position, ship.transform.position) <= shipWeapon.range) {
+                        Vector3 targetDir = playerFleet[shipNum].transform.position - ship.transform.position;
+                        float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.forward);
+
+                        if(shipWeapon.fireArc == "Left")
+                        {
+                            if (angle >= 45 && angle <=135)
+                            {
+
+                            }
+                        } else if (shipWeapon.fireArc == "Right")
+                        {
+                            if ()
+                            {
+
+                            }
+                        } else if (shipWeapon.fireArc == "Front")
+                        {
+                            if ()
+                            {
+
+                            }
+                        } else if (shipWeapon.fireArc == "Left/Front")
+                        {
+                            if ()
+                            {
+
+                            }
+                        } else if (shipWeapon.fireArc == "Front/Right")
+                        {
+                            if ()
+                            {
+
+                            }
+                        } else if (shipWeapon.fireArc == "Left/Front/Right")
+                        {
+                            if ()
+                            {
+
+                            }
+                        }
+                    }
+                }
+            }
 
         }
         else if (phase[phaseNum] == "ordinance")
         {
 
         }
-
-        if (Input.GetKey(KeyCode.KeypadEnter))
-        {
-            phaseNum++;
-        }
-
-        //shipNum++;
     }
 }
