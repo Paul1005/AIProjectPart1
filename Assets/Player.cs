@@ -7,16 +7,19 @@ public class Player : MonoBehaviour
 
     private ShipCard[] playerFleet;
     private ShipCard[] enemyFleet;
+    GameObject enemyPlayer;
     private bool isTurn;
     private List<string> phase = new List<string>();
     int shipNum = 0;
     int phaseNum = 0;
+    int enemyShipNum = 0;
+    int weaponNum = 0;
+
     // Use this for initialization
     void Start()
     {
-        playerFleet = GetComponentsInChildren<ShipCard>();
-        GameObject enemyPlayer = GameObject.Find("Player2");
-        enemyFleet = enemyPlayer.GetComponentsInChildren<ShipCard>();
+        enemyPlayer = GameObject.Find("Player2");
+
         isTurn = true;
         phase.Add("movement");
         phase.Add("shooting");
@@ -28,6 +31,14 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        playerFleet = GetComponentsInChildren<ShipCard>();
+        enemyFleet = enemyPlayer.GetComponentsInChildren<ShipCard>();
+        foreach (ShipCard ship in playerFleet)
+        {
+            ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+        }
+        playerFleet[shipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+
         if (phase[phaseNum] == "movement")
         {
             int turnDistance = 0;
@@ -44,7 +55,7 @@ public class Player : MonoBehaviour
             {
                 if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude < (float)playerFleet[shipNum].speed / 10)
                 {
-                    playerFleet[shipNum].gameObject.transform.position += playerFleet[shipNum].gameObject.transform.right * 0.015f;
+                    playerFleet[shipNum].gameObject.transform.position += playerFleet[shipNum].gameObject.transform.up * 0.015f;
                 }
 
             }
@@ -70,10 +81,10 @@ public class Player : MonoBehaviour
                     }
                 }
             }
-            else if (Input.GetKey(KeyCode.KeypadEnter))
+            else if (Input.GetKeyUp(KeyCode.KeypadEnter))
             {
                 if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((float)playerFleet[shipNum].speed / 2) / 10)
-                {   
+                {
                     if (shipNum < playerFleet.Length - 1)
                     {
                         shipNum++;
@@ -88,14 +99,17 @@ public class Player : MonoBehaviour
         }
         else if (phase[phaseNum] == "shooting")
         {
-            int enemyShipNum = 0;
-            int weaponNum = 0;
             WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
             bool isInRange = false;
-            if (Vector3.Distance(playerFleet[shipNum].transform.position, enemyFleet[enemyShipNum].transform.position) <= shipWeapons[weaponNum].range)
+            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+            print(shipNum);
+            if (Vector3.Distance(playerFleet[shipNum].transform.position, 
+                enemyFleet[enemyShipNum].transform.position) <= 
+                shipWeapons[weaponNum].range)
             {
                 Vector3 targetDir = playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position;
-                float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.forward);
+                float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.up);
+                //print(angle);
                 bool isInLeftArc = angle >= 45 && angle <= 135;
                 bool isInRightArc = angle >= 225 && angle <= 315;
                 bool isInFrontArc = angle >= 315 && angle <= 45;
@@ -162,7 +176,7 @@ public class Player : MonoBehaviour
                         {
                             shipNum++;
                         }
-                       else if (shipNum == playerFleet.Length - 1)
+                        else if (shipNum == playerFleet.Length - 1)
                         {
                             shipNum = 0;
                             phaseNum = 0;
@@ -170,18 +184,20 @@ public class Player : MonoBehaviour
                         }
                     }
                 }
-   
+
             }
             else if (isInRange)
             {
-                if (Input.GetKey(KeyCode.KeypadEnter))
+                print("Current Weapon is: " + shipWeapons[weaponNum]);
+                if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                 {
                     enemyFleet[enemyShipNum].shields -= shipWeapons[weaponNum].firepower;
-                    if(enemyFleet[enemyShipNum].shields <= 0)
+                    if (enemyFleet[enemyShipNum].shields <= 0)
                     {
                         enemyFleet[enemyShipNum].hits -= shipWeapons[weaponNum].firepower; // expand upon
                     }
                     print("firing: " + shipWeapons[weaponNum] + " at " + enemyFleet[enemyShipNum]);
+                    print("shields at:" + enemyFleet[enemyShipNum].shields);
                     print("health at " + enemyFleet[enemyShipNum].hits);
                     if (weaponNum < shipWeapons.Length - 1)
                     {
@@ -190,16 +206,20 @@ public class Player : MonoBehaviour
                     else if (weaponNum == shipWeapons.Length - 1)
                     {
                         weaponNum = 0;
-                        shipNum++;
-                    }
-                    else if (shipNum == playerFleet.Length - 1)
-                    {
-                        shipNum = 0;
-                        phaseNum++;
-                    }
 
+                        if (shipNum <= playerFleet.Length - 1)
+                        {
+                            shipNum++;
+                        }
+                        else if (shipNum == playerFleet.Length - 1)
+                        {
+                            shipNum = 0;
+                            phaseNum = 0;
+                            //other players turn
+                        }
+                    }
                 }
-                else if (Input.GetKey(KeyCode.LeftArrow))
+                else if (Input.GetKeyUp(KeyCode.LeftArrow))
                 {
                     if (enemyShipNum > 0)
                     {
@@ -211,7 +231,7 @@ public class Player : MonoBehaviour
                     }
                     print("switching to previous ship");
                 }
-                else if (Input.GetKey(KeyCode.RightArrow))
+                else if (Input.GetKeyUp(KeyCode.RightArrow))
                 {
                     if (enemyShipNum < enemyFleet.Length - 1)
                     {
