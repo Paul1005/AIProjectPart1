@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class AI : MonoBehaviour {
-    private bool isTurn;
-    private ShipCard[] fleet;
+    public Player player;
 
     // Use this for initialization
     void Start () {
-		
+        player = gameObject.GetComponent<Player>();
 	}
 	
 	// Update is called once per frame

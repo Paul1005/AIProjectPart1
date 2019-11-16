@@ -5,15 +5,15 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
 
-    private ShipCard[] playerFleet;
-    private ShipCard[] enemyFleet;
-    GameObject enemyPlayer;
+    public ShipCard[] playerFleet;
+    public ShipCard[] enemyFleet;
+    public GameObject enemyPlayer;
     public bool isTurn;
-    private List<string> phase = new List<string>();
-    int shipNum = 0;
-    int phaseNum = 0;
-    int enemyShipNum = 0;
-    int weaponNum = 0;
+    public List<string> phase = new List<string>();
+    public int shipNum = 0;
+    public int phaseNum = 0;
+    public int enemyShipNum = 0;
+    public int weaponNum = 0;
 
     // Use this for initialization
     void Start()
