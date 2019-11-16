@@ -61,37 +61,37 @@ public class Player : MonoBehaviour
                 }
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude < (float)playerFleet[shipNum].speed / 10)
+                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude < (float)playerFleet[shipNum].speed / 10)
                     {
-                        playerFleet[shipNum].gameObject.transform.position += playerFleet[shipNum].gameObject.transform.up * 0.015f;
+                        playerFleet[shipNum].transform.position += playerFleet[shipNum].transform.up * 0.015f;
                     }
 
                 }
                 else if (Input.GetKey(KeyCode.LeftArrow))
                 {
-                    if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
                     {
                         if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
                         {
                             playerFleet[shipNum].totalRotation += 0.375f;
-                            playerFleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, 0.375f));
+                            playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, 0.375f));
                         }
                     }
                 }
                 else if (Input.GetKey(KeyCode.RightArrow))
                 {
-                    if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
                     {
                         if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
                         {
                             playerFleet[shipNum].totalRotation += 0.375f;
-                            playerFleet[shipNum].gameObject.transform.Rotate(new Vector3(0, 0, -0.375f));
+                            playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, -0.375f));
                         }
                     }
                 }
-                else if (Input.GetKeyUp(KeyCode.KeypadEnter))
+                else if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                 {
-                    if ((playerFleet[shipNum].gameObject.transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((float)playerFleet[shipNum].speed / 2) / 10)
+                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((float)playerFleet[shipNum].speed / 2) / 10)
                     {
                         if (shipNum < playerFleet.Length - 1)
                         {
@@ -102,7 +102,7 @@ public class Player : MonoBehaviour
                             phaseNum++;
                             shipNum = 0;
                         }
-                        playerFleet[shipNum].previousPosition = playerFleet[shipNum].gameObject.transform.position;
+                        playerFleet[shipNum].previousPosition = playerFleet[shipNum].transform.position;
                         playerFleet[shipNum].totalRotation = 0;
                     }
                 }
@@ -116,16 +116,14 @@ public class Player : MonoBehaviour
                     ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
                 }
                 enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-                print(enemyFleet[enemyShipNum]);
-                float distance = Vector3.Distance(playerFleet[shipNum].transform.position, enemyFleet[enemyShipNum].transform.position);
+                float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
                 if (distance <= shipWeapons[weaponNum].range / 10)
                 {
-                    Vector3 targetDir = playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position;
+                    Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
                     float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.up);
-                    //print(angle);
                     bool isInLeftArc = angle >= 45 && angle <= 135;
                     bool isInRightArc = angle >= 225 && angle <= 315;
-                    bool isInFrontArc = angle >= 315 && angle <= 45;
+                    bool isInFrontArc = angle >= 315 || angle <= 45;
 
                     if (shipWeapons[weaponNum].fireArc == "Left")
                     {
@@ -208,7 +206,7 @@ public class Player : MonoBehaviour
                 }
                 else if (isInRange)
                 {
-                    print("Current Weapon is: " + shipWeapons[weaponNum]);
+                    //print("Current Weapon is: " + shipWeapons[weaponNum]);
                     if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                     {
                         float firepower = shipWeapons[weaponNum].firepower;
@@ -280,11 +278,11 @@ public class Player : MonoBehaviour
                             }
                         }
 
-
                         enemyFleet[enemyShipNum].shields -= damage;
+                        damage -= enemyFleet[enemyShipNum].shields;
                         if (enemyFleet[enemyShipNum].shields <= 0)
                         {
-                            enemyFleet[enemyShipNum].hits -= damage; // expand upon
+                            enemyFleet[enemyShipNum].hits -= damage;
                         }
 
                         print("firing: " + shipWeapons[weaponNum] + " at " + enemyFleet[enemyShipNum]);
@@ -298,7 +296,7 @@ public class Player : MonoBehaviour
                         {
                             weaponNum = 0;
 
-                            if (shipNum <= playerFleet.Length - 1)
+                            if (shipNum < playerFleet.Length - 1)
                             {
                                 shipNum++;
                             }
