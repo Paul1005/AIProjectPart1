@@ -12,7 +12,6 @@ public class ShipCard : MonoBehaviour
     public int shields;
     private int maxShields;
     public int armour;
-    public int frontArmour;
     public int turrets;
     public ArrayList weapons;
     public Vector3 previousPosition;
