@@ -7,7 +7,7 @@ public class ShipCard : MonoBehaviour
     public int pointValue;
     public string type;
     public int hits;
-    public int speed;
+    public float speed;
     public int turns;
     public int shields;
     private int maxShields;
@@ -16,6 +16,11 @@ public class ShipCard : MonoBehaviour
     public ArrayList weapons;
     public Vector3 previousPosition;
     public float totalRotation;
+    public bool specialOrderChosen;
+    public int extraMovement;
+    public int turnMultiplier;
+    public int minMoveMultiplier;
+    public float maxMoveMultiplier;
 
     // Use this for initialization
     void Start()
@@ -23,6 +28,11 @@ public class ShipCard : MonoBehaviour
         previousPosition = gameObject.transform.position;
         totalRotation = 0;
         maxShields = shields;
+        specialOrderChosen = false;
+        extraMovement = 0;
+        turnMultiplier = 1;
+        minMoveMultiplier = 1;
+        maxMoveMultiplier = 1;
     }
 
     // Update is called once per frame

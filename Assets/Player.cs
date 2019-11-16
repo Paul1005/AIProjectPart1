@@ -49,61 +49,99 @@ public class Player : MonoBehaviour
 
             if (phase[phaseNum] == "movement")
             {
-                int turnDistance = 0;
+                if (!playerFleet[shipNum].specialOrderChosen)
+                {
+                    if (Input.GetKey(KeyCode.A))
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            playerFleet[shipNum].extraMovement += Random.Range(1, 6);
+                        }
+                        playerFleet[shipNum].specialOrderChosen = true;
+                    }
+                    else if (Input.GetKey(KeyCode.H))
+                    {
+                        playerFleet[shipNum].turnMultiplier = 2;
+                        playerFleet[shipNum].specialOrderChosen = true;
+                    }
+                    else if (Input.GetKey(KeyCode.R))
+                    {
+                        playerFleet[shipNum].minMoveMultiplier = 0;
+                        playerFleet[shipNum].maxMoveMultiplier = 0.5f;
+                        playerFleet[shipNum].specialOrderChosen = true;
+                    }
+                    else if (Input.GetKey(KeyCode.Space))
+                    {
+                        playerFleet[shipNum].turnMultiplier = 0;
+                        playerFleet[shipNum].specialOrderChosen = true;
+                    }
+                    else if (Input.GetKey(KeyCode.N))
+                    {
+                        playerFleet[shipNum].extraMovement = 0;
+                        playerFleet[shipNum].turnMultiplier = 1;
+                        playerFleet[shipNum].minMoveMultiplier = 1;
+                        playerFleet[shipNum].maxMoveMultiplier = 1;
+                        playerFleet[shipNum].specialOrderChosen = true;
+                    }
+                }
+                else
+                {
+                    float turnDistance = 0;
 
-                if (playerFleet[shipNum].type == "Battleship")
-                {
-                    turnDistance = 15;
-                }
-                else if (playerFleet[shipNum].type == "Cruiser")
-                {
-                    turnDistance = 10;
-                }
-                if (Input.GetKey(KeyCode.UpArrow))
-                {
-                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude < (float)playerFleet[shipNum].speed / 10)
+                    if (playerFleet[shipNum].type == "Battleship")
                     {
-                        playerFleet[shipNum].transform.position += playerFleet[shipNum].transform.up * 0.015f;
+                        turnDistance = 15;
                     }
-
-                }
-                else if (Input.GetKey(KeyCode.LeftArrow))
-                {
-                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                    else if (playerFleet[shipNum].type == "Cruiser")
                     {
-                        if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
+                        turnDistance = 10;
+                    }
+                    if (Input.GetKey(KeyCode.UpArrow))
+                    {
+                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude < (playerFleet[shipNum].speed * playerFleet[shipNum].maxMoveMultiplier + playerFleet[shipNum].extraMovement) / 10)
                         {
-                            playerFleet[shipNum].totalRotation += 0.375f;
-                            playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, 0.375f));
+                            playerFleet[shipNum].transform.position += playerFleet[shipNum].transform.up * 0.015f;
                         }
                     }
-                }
-                else if (Input.GetKey(KeyCode.RightArrow))
-                {
-                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (float)turnDistance / 10)
+                    else if (Input.GetKey(KeyCode.LeftArrow))
                     {
-                        if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns)
+                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10)
                         {
-                            playerFleet[shipNum].totalRotation += 0.375f;
-                            playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, -0.375f));
+                            if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns * playerFleet[shipNum].turnMultiplier)
+                            {
+                                playerFleet[shipNum].totalRotation += 0.375f;
+                                playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, 0.375f));
+                            }
                         }
                     }
-                }
-                else if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
-                {
-                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((float)playerFleet[shipNum].speed / 2) / 10)
+                    else if (Input.GetKey(KeyCode.RightArrow))
                     {
-                        if (shipNum < playerFleet.Length - 1)
+                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10)
                         {
-                            shipNum++;
+                            if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns * playerFleet[shipNum].turnMultiplier)
+                            {
+                                playerFleet[shipNum].totalRotation += 0.375f;
+                                playerFleet[shipNum].transform.Rotate(new Vector3(0, 0, -0.375f));
+                            }
                         }
-                        else if (shipNum == playerFleet.Length - 1)
+                    }
+                    else if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
+                    {
+                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((playerFleet[shipNum].speed / 2) * playerFleet[shipNum].minMoveMultiplier) / 10)
                         {
-                            phaseNum++;
-                            shipNum = 0;
+                            playerFleet[shipNum].specialOrderChosen = false;
+                            playerFleet[shipNum].previousPosition = playerFleet[shipNum].transform.position;
+                            playerFleet[shipNum].totalRotation = 0;
+                            if (shipNum < playerFleet.Length - 1)
+                            {
+                                shipNum++;
+                            }
+                            else if (shipNum == playerFleet.Length - 1)
+                            {
+                                phaseNum++;
+                                shipNum = 0;
+                            }
                         }
-                        playerFleet[shipNum].previousPosition = playerFleet[shipNum].transform.position;
-                        playerFleet[shipNum].totalRotation = 0;
                     }
                 }
             }
