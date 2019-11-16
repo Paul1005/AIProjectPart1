@@ -235,6 +235,7 @@ public class Player : MonoBehaviour
                                 foreach (ShipCard ship in playerFleet)
                                 {
                                     ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                                    ship.shields++;
                                 }
                                 //other players turn
                             }
@@ -347,6 +348,7 @@ public class Player : MonoBehaviour
                                 foreach (ShipCard ship in playerFleet)
                                 {
                                     ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                                    ship.shields++;
                                 }
                                 //other players turn
                             }
