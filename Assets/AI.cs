@@ -7,12 +7,18 @@ public class AI : MonoBehaviour
     private Player player;
     bool isEnemyShipMarked;
     int enemyShip;
+    bool firstMoveComplete;
+    bool turnComplete;
+    bool secondMoveComplete;
     // Use this for initialization
     void Start()
     {
         player = gameObject.GetComponent<Player>();
         isEnemyShipMarked = false;
         enemyShip = 0;
+        firstMoveComplete = false;
+        turnComplete = false;
+        secondMoveComplete = false;
     }
 
     // Update is called once per frame
@@ -20,44 +26,29 @@ public class AI : MonoBehaviour
     {
         if (player.isTurn)
         {
-            float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[enemyShip].transform.position).magnitude;
-            if (!isEnemyShipMarked)
+            if (player.phase[player.phaseNum] == "movement")
             {
-                for (int i = 1; i < player.enemyFleet.Length; i++)
+                float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[enemyShip].transform.position).magnitude;
+                if (!isEnemyShipMarked)
                 {
-                    if ((player.playerFleet[player.shipNum].transform.position - player.enemyFleet[0].transform.position).magnitude < distance)
+                    for (int i = 1; i < player.enemyFleet.Length; i++)
                     {
-                        enemyShip = i;
+                        if ((player.playerFleet[player.shipNum].transform.position - player.enemyFleet[0].transform.position).magnitude < distance)
+                        {
+                            enemyShip = i;
+                        }
                     }
+                    isEnemyShipMarked = true;
                 }
-                isEnemyShipMarked = true;
-            }
-            else if (isEnemyShipMarked)
-            {
-                // Decision tree for movement
-                if (distance < 3)
+                else if (isEnemyShipMarked)
                 {
                     Vector3 targetDir = player.enemyFleet[enemyShip].transform.position - player.playerFleet[player.shipNum].transform.position;
-                    float angle = Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up);
-                    if ((angle > 45 && angle < 135) || (angle < 325 && angle > 225))
+                    float angle = Vector3.SignedAngle(targetDir, player.playerFleet[player.shipNum].transform.up, Vector3.up);
+
+                    // Decision tree for movement
+                    if (distance < 3)
                     {
-                        if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 2 / 10)
-                        {
-                            player.moveForward();
-                        }
-                        else
-                        {
-                            player.finishMovingShip();
-                            isEnemyShipMarked = false;
-                        }
-                    }
-                    else
-                    {
-                        if (Mathf.Abs(angle - Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up)) < player.playerFleet[player.shipNum].turns)
-                        {
-                            player.turnLeft();
-                        }
-                        else
+                        if ((angle > 45 && angle < 135) || (angle < 325 && angle > 225))
                         {
                             if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 2 / 10)
                             {
@@ -69,36 +60,77 @@ public class AI : MonoBehaviour
                                 isEnemyShipMarked = false;
                             }
                         }
-                    }
-
-                }
-                else if (distance >= 3)
-                {
-                    Vector3 targetDir = player.enemyFleet[enemyShip].transform.position - player.playerFleet[player.shipNum].transform.position;
-                    float angle = Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up);
-                    if (angle > 0 && angle < 180)
-                    {
-                        if (Mathf.Abs(angle - Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up)) < player.playerFleet[player.shipNum].turns && Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up) != 0)
+                        else
                         {
-                            player.turnLeft();
+                            if (Mathf.Abs(angle - Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up)) < player.playerFleet[player.shipNum].turns)
+                            {
+                                player.turnLeft();
+                            }
+                            else
+                            {
+                                if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 2 / 10)
+                                {
+                                    player.moveForward();
+                                }
+                                else
+                                {
+                                    player.finishMovingShip();
+                                    isEnemyShipMarked = false;
+                                }
+                            }
                         }
                     }
-                    else if (angle > 180 && angle < 360)
+                    else if (distance >= 3)
                     {
-                        if (Mathf.Abs(angle - Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up)) < player.playerFleet[player.shipNum].turns && Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up) != 0)
+                        if (!firstMoveComplete)
                         {
-                            player.turnRight();
+                            if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].turnDistance / 10)
+                            {
+                                player.moveForward();
+                            }
+                            else
+                            {
+                                firstMoveComplete = true;
+                            }
                         }
-                    }
-
-                    if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 10)
-                    {
-                        player.moveForward();
-                    }
-                    else
-                    {
-                        player.finishMovingShip();
-                        isEnemyShipMarked = false;
+                        else if (!turnComplete)
+                        {
+                            print(angle);
+                            if (angle > 0 && player.playerFleet[player.shipNum].totalRotation < player.playerFleet[player.shipNum].turns)
+                            {
+                                if (angle < 0)
+                                {
+                                    player.turnLeft();
+                                }
+                                else if (angle > 0)
+                                {
+                                    player.turnRight();
+                                }
+                            }
+                            else
+                            {
+                                turnComplete = true;
+                            }
+                        }
+                        else if (!secondMoveComplete)
+                        {
+                            if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 10)
+                            {
+                                player.moveForward();
+                            }
+                            else
+                            {
+                                secondMoveComplete = true;
+                            }
+                        }
+                        else
+                        {
+                            player.finishMovingShip();
+                            isEnemyShipMarked = false;
+                            firstMoveComplete = false;
+                            turnComplete = false;
+                            secondMoveComplete = false;
+                        }
                     }
                 }
             }
