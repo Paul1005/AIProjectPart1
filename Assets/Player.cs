@@ -128,7 +128,7 @@ public class Player : MonoBehaviour
                 if (distance <= shipWeapons[weaponNum].range / 10)
                 {
                     Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
-                    float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.up);
+                    float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.forward);
                     bool isInLeftArc = angle <= -45 && angle >= -135;
                     bool isInRightArc = angle >= 45 && angle <= 135;
                     bool isInFrontArc = angle >= -45 && angle <= 45;
