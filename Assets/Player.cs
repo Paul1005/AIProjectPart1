@@ -205,118 +205,13 @@ public class Player : MonoBehaviour
                                 }
                             }
                         }
-
                     }
                     else if (isInRange)
                     {
                         //print("Current Weapon is: " + shipWeapons[weaponNum]);
                         if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                         {
-                            float firepower = shipWeapons[weaponNum].firepower;
-                            int damage = 0;
-                            if (shipWeapons[weaponNum].type == "WeaponBattery")
-                            {
-                                if (distance <= 1.5)
-                                {
-                                    if (enemyFleet[enemyShipNum].type == "Battleship")
-                                    {
-                                        firepower *= 0.8f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Cruiser")
-                                    {
-                                        firepower *= 0.75f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Escort")
-                                    {
-                                        firepower *= 0.67f;
-                                    }
-                                }
-                                else if (distance > 1.5 && distance <= 3)
-                                {
-                                    if (enemyFleet[enemyShipNum].type == "Battleship")
-                                    {
-                                        firepower *= 0.75f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Cruiser")
-                                    {
-                                        firepower *= 0.67f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Escort")
-                                    {
-                                        firepower *= 0.5f;
-                                    }
-                                }
-                                else if (distance > 3)
-                                {
-                                    if (enemyFleet[enemyShipNum].type == "Battleship")
-                                    {
-                                        firepower *= 0.67f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Cruiser")
-                                    {
-                                        firepower *= 0.5f;
-                                    }
-                                    else if (enemyFleet[enemyShipNum].type == "Escort")
-                                    {
-                                        firepower *= 0.33f;
-                                    }
-                                }
-                                firepower = Mathf.CeilToInt(firepower);
-                                for (int i = 0; i < firepower; i++)
-                                {
-                                    if (Random.Range(1, 6) >= enemyFleet[enemyShipNum].armour)
-                                    {
-                                        damage++;
-                                    }
-                                }
-                            }
-                            else if (shipWeapons[weaponNum].type == "LanceBattery")
-                            {
-                                for (int i = 0; i < firepower; i++)
-                                {
-                                    if (Random.Range(1, 6) >= 4)
-                                    {
-                                        damage++;
-                                    }
-                                }
-                            }
-
-                            enemyFleet[enemyShipNum].shields -= damage;
-                            damage -= enemyFleet[enemyShipNum].shields;
-                            if (enemyFleet[enemyShipNum].shields <= 0)
-                            {
-                                enemyFleet[enemyShipNum].hits -= damage;
-                            }
-
-                            print("firing: " + shipWeapons[weaponNum] + " at " + enemyFleet[enemyShipNum]);
-                            print("shields at:" + enemyFleet[enemyShipNum].shields);
-                            print("health at " + enemyFleet[enemyShipNum].hits);
-                            if (weaponNum < shipWeapons.Length - 1)
-                            {
-                                weaponNum++;
-                            }
-                            else if (weaponNum == shipWeapons.Length - 1)
-                            {
-                                weaponNum = 0;
-
-                                if (shipNum < playerFleet.Length - 1)
-                                {
-                                    shipNum++;
-                                }
-                                else if (shipNum == playerFleet.Length - 1)
-                                {
-                                    shipNum = 0;
-                                    phaseNum = 0;
-                                    isTurn = false;
-                                    enemyPlayer.GetComponent<Player>().isTurn = true;
-                                    foreach (ShipCard ship in playerFleet)
-                                    {
-                                        ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                                        ship.shields++;
-                                    }
-                                    //other players turn
-                                }
-                            }
+                            fireWeapon(shipWeapons, distance);
                         }
                         else if (Input.GetKeyUp(KeyCode.LeftArrow))
                         {
@@ -344,6 +239,115 @@ public class Player : MonoBehaviour
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public void fireWeapon(WeaponCard[] shipWeapons, float distance)
+    {
+        float firepower = shipWeapons[weaponNum].firepower;
+        int damage = 0;
+        if (shipWeapons[weaponNum].type == "WeaponBattery")
+        {
+            if (distance <= 1.5)
+            {
+                if (enemyFleet[enemyShipNum].type == "Battleship")
+                {
+                    firepower *= 0.8f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Cruiser")
+                {
+                    firepower *= 0.75f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Escort")
+                {
+                    firepower *= 0.67f;
+                }
+            }
+            else if (distance > 1.5 && distance <= 3)
+            {
+                if (enemyFleet[enemyShipNum].type == "Battleship")
+                {
+                    firepower *= 0.75f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Cruiser")
+                {
+                    firepower *= 0.67f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Escort")
+                {
+                    firepower *= 0.5f;
+                }
+            }
+            else if (distance > 3)
+            {
+                if (enemyFleet[enemyShipNum].type == "Battleship")
+                {
+                    firepower *= 0.67f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Cruiser")
+                {
+                    firepower *= 0.5f;
+                }
+                else if (enemyFleet[enemyShipNum].type == "Escort")
+                {
+                    firepower *= 0.33f;
+                }
+            }
+            firepower = Mathf.CeilToInt(firepower);
+            for (int i = 0; i < firepower; i++)
+            {
+                if (Random.Range(1, 6) >= enemyFleet[enemyShipNum].armour)
+                {
+                    damage++;
+                }
+            }
+        }
+        else if (shipWeapons[weaponNum].type == "LanceBattery")
+        {
+            for (int i = 0; i < firepower; i++)
+            {
+                if (Random.Range(1, 6) >= 4)
+                {
+                    damage++;
+                }
+            }
+        }
+
+        enemyFleet[enemyShipNum].shields -= damage;
+        damage -= enemyFleet[enemyShipNum].shields;
+        if (enemyFleet[enemyShipNum].shields <= 0)
+        {
+            enemyFleet[enemyShipNum].hits -= damage;
+        }
+
+        print("firing: " + shipWeapons[weaponNum] + " at " + enemyFleet[enemyShipNum]);
+        print("shields at:" + enemyFleet[enemyShipNum].shields);
+        print("health at " + enemyFleet[enemyShipNum].hits);
+        if (weaponNum < shipWeapons.Length - 1)
+        {
+            weaponNum++;
+        }
+        else if (weaponNum == shipWeapons.Length - 1)
+        {
+            weaponNum = 0;
+
+            if (shipNum < playerFleet.Length - 1)
+            {
+                shipNum++;
+            }
+            else if (shipNum == playerFleet.Length - 1)
+            {
+                shipNum = 0;
+                phaseNum = 0;
+                isTurn = false;
+                enemyPlayer.GetComponent<Player>().isTurn = true;
+                foreach (ShipCard ship in playerFleet)
+                {
+                    ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                    ship.shields++;
+                }
+                //other players turn
             }
         }
     }
