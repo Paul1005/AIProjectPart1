@@ -77,13 +77,18 @@ public class Player : MonoBehaviour
             {
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude < (playerFleet[shipNum].speed * playerFleet[shipNum].maxMoveMultiplier + playerFleet[shipNum].extraMovement) / 10)
+                    float magnitude = (playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude;
+                    float max = playerFleet[shipNum].speed * playerFleet[shipNum].maxMoveMultiplier + playerFleet[shipNum].extraMovement / 10;
+                    float maxTurn = (playerFleet[shipNum].turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10;
+                    float min = ((playerFleet[shipNum].speed / 2) * playerFleet[shipNum].minMoveMultiplier) / 10;
+
+                    if (magnitude < max)
                     {
                         moveForward();
                     }
                     else if (Input.GetKey(KeyCode.LeftArrow))
                     {
-                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (playerFleet[shipNum].turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10)
+                        if (magnitude >= maxTurn)
                         {
                             if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns * playerFleet[shipNum].turnMultiplier)
                             {
@@ -93,7 +98,7 @@ public class Player : MonoBehaviour
                     }
                     else if (Input.GetKey(KeyCode.RightArrow))
                     {
-                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= (playerFleet[shipNum].turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10)
+                        if (magnitude >= maxTurn)
                         {
                             if (playerFleet[shipNum].totalRotation < playerFleet[shipNum].turns * playerFleet[shipNum].turnMultiplier)
                             {
@@ -103,7 +108,7 @@ public class Player : MonoBehaviour
                     }
                     else if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                     {
-                        if ((playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude >= ((playerFleet[shipNum].speed / 2) * playerFleet[shipNum].minMoveMultiplier) / 10)
+                        if (magnitude >= min)
                         {
                             finishMovingShip();
                         }
