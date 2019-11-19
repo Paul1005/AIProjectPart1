@@ -43,7 +43,7 @@ public class AI : MonoBehaviour
                 else if (isEnemyShipMarked)
                 {
                     Vector3 targetDir = player.enemyFleet[enemyShip].transform.position - player.playerFleet[player.shipNum].transform.position;
-                    float angle = Vector3.SignedAngle(targetDir, player.playerFleet[player.shipNum].transform.up, Vector3.up);
+                    float angle = Vector3.SignedAngle(targetDir, player.playerFleet[player.shipNum].transform.up, Vector3.forward);
 
                     // Decision tree for movement
                     if (distance < 3)
@@ -95,7 +95,6 @@ public class AI : MonoBehaviour
                         }
                         else if (!turnComplete)
                         {
-                            print(angle);
                             if (angle > 0 && player.playerFleet[player.shipNum].totalRotation < player.playerFleet[player.shipNum].turns)
                             {
                                 if (angle < 0)
