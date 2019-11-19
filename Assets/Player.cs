@@ -72,19 +72,19 @@ public class Player : MonoBehaviour
                         noSpecialOrder();
                     }
                 }
-            }
-            else
-            {
-                if (Input.GetKey(KeyCode.UpArrow))
+                else
                 {
                     float magnitude = (playerFleet[shipNum].transform.position - playerFleet[shipNum].previousPosition).magnitude;
-                    float max = playerFleet[shipNum].speed * playerFleet[shipNum].maxMoveMultiplier + playerFleet[shipNum].extraMovement / 10;
-                    float maxTurn = (playerFleet[shipNum].turnDistance * playerFleet[shipNum].minMoveMultiplier) / 10;
-                    float min = ((playerFleet[shipNum].speed / 2) * playerFleet[shipNum].minMoveMultiplier) / 10;
+                    float max = (playerFleet[shipNum].speed * playerFleet[shipNum].maxMoveMultiplier + playerFleet[shipNum].extraMovement) / 10;
+                    float maxTurn = playerFleet[shipNum].turnDistance * playerFleet[shipNum].minMoveMultiplier / 10;
+                    float min = playerFleet[shipNum].speed / 2 * playerFleet[shipNum].minMoveMultiplier / 10;
 
-                    if (magnitude < max)
+                    if (Input.GetKey(KeyCode.UpArrow))
                     {
-                        moveForward();
+                        if (magnitude < max)
+                        {
+                            moveForward();
+                        }
                     }
                     else if (Input.GetKey(KeyCode.LeftArrow))
                     {
@@ -114,68 +114,124 @@ public class Player : MonoBehaviour
                         }
                     }
                 }
-                else if (phase[phaseNum] == "shooting")
+            }
+            else if (phase[phaseNum] == "shooting")
+            {
+                WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
+                bool isInRange = false;
+                foreach (ShipCard ship in enemyFleet)
                 {
-                    WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
-                    bool isInRange = false;
-                    foreach (ShipCard ship in enemyFleet)
-                    {
-                        ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                    }
-                    enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-                    float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
-                    if (distance <= shipWeapons[weaponNum].range / 10)
-                    {
-                        Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
-                        float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.up);
-                        bool isInLeftArc = angle >= 45 && angle <= 135;
-                        bool isInRightArc = angle >= 225 && angle <= 315;
-                        bool isInFrontArc = angle >= 315 || angle <= 45;
+                    ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                }
+                enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+                float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
+                if (distance <= shipWeapons[weaponNum].range / 10)
+                {
+                    Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
+                    float angle = Vector3.Angle(targetDir, playerFleet[shipNum].transform.up);
+                    bool isInLeftArc = angle >= 45 && angle <= 135;
+                    bool isInRightArc = angle >= 225 && angle <= 315;
+                    bool isInFrontArc = angle >= 315 || angle <= 45;
 
-                        if (shipWeapons[weaponNum].fireArc == "Left")
+                    if (shipWeapons[weaponNum].fireArc == "Left")
+                    {
+                        if (isInLeftArc)
                         {
-                            if (isInLeftArc)
-                            {
-                                isInRange = true;
-                            }
+                            isInRange = true;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Right")
+                    }
+                    else if (shipWeapons[weaponNum].fireArc == "Right")
+                    {
+                        if (isInRightArc)
                         {
-                            if (isInRightArc)
-                            {
-                                isInRange = true;
-                            }
+                            isInRange = true;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Front")
+                    }
+                    else if (shipWeapons[weaponNum].fireArc == "Front")
+                    {
+                        if (isInFrontArc)
                         {
-                            if (isInFrontArc)
-                            {
-                                isInRange = true;
-                            }
+                            isInRange = true;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Left/Front")
+                    }
+                    else if (shipWeapons[weaponNum].fireArc == "Left/Front")
+                    {
+                        if (isInLeftArc || isInFrontArc)
                         {
-                            if (isInLeftArc || isInFrontArc)
-                            {
-                                isInRange = true;
-                            }
+                            isInRange = true;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Front/Right")
+                    }
+                    else if (shipWeapons[weaponNum].fireArc == "Front/Right")
+                    {
+                        if (isInFrontArc || isInRightArc)
                         {
-                            if (isInFrontArc || isInRightArc)
-                            {
-                                isInRange = true;
-                            }
+                            isInRange = true;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
+                    }
+                    else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
+                    {
+                        if (isInLeftArc || isInFrontArc || isInRightArc)
                         {
-                            if (isInLeftArc || isInFrontArc || isInRightArc)
+                            isInRange = true;
+                        }
+                    }
+                }
+                if (!isInRange)
+                {
+                    if (enemyShipNum < enemyFleet.Length - 1)
+                    {
+                        enemyShipNum++;
+                    }
+                    else if (enemyShipNum == enemyFleet.Length - 1)
+                    {
+                        enemyShipNum = 0;
+                        if (weaponNum < shipWeapons.Length - 1)
+                        {
+                            weaponNum++;
+                        }
+                        else if (weaponNum == shipWeapons.Length - 1)
+                        {
+                            weaponNum = 0;
+                            if (shipNum < playerFleet.Length - 1)
                             {
-                                isInRange = true;
+                                shipNum++;
+                            }
+                            else if (shipNum == playerFleet.Length - 1)
+                            {
+                                shipNum = 0;
+                                phaseNum = 0;
+                                isTurn = false;
+                                enemyPlayer.GetComponent<Player>().isTurn = true;
+                                foreach (ShipCard ship in playerFleet)
+                                {
+                                    ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                                    ship.shields++;
+                                }
+                                //other players turn
                             }
                         }
                     }
-                    if (!isInRange)
+                }
+                else if (isInRange)
+                {
+                    //print("Current Weapon is: " + shipWeapons[weaponNum]);
+                    if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
+                    {
+                        fireWeapon(shipWeapons, distance);
+                    }
+                    else if (Input.GetKeyUp(KeyCode.LeftArrow))
+                    {
+                        if (enemyShipNum > 0)
+                        {
+                            enemyShipNum--;
+                        }
+                        else if (enemyShipNum == 0)
+                        {
+                            enemyShipNum = enemyFleet.Length - 1;
+                        }
+                        print("switching to previous ship");
+                    }
+                    else if (Input.GetKeyUp(KeyCode.RightArrow))
                     {
                         if (enemyShipNum < enemyFleet.Length - 1)
                         {
@@ -184,64 +240,8 @@ public class Player : MonoBehaviour
                         else if (enemyShipNum == enemyFleet.Length - 1)
                         {
                             enemyShipNum = 0;
-                            if (weaponNum < shipWeapons.Length - 1)
-                            {
-                                weaponNum++;
-                            }
-                            else if (weaponNum == shipWeapons.Length - 1)
-                            {
-                                weaponNum = 0;
-                                if (shipNum < playerFleet.Length - 1)
-                                {
-                                    shipNum++;
-                                }
-                                else if (shipNum == playerFleet.Length - 1)
-                                {
-                                    shipNum = 0;
-                                    phaseNum = 0;
-                                    isTurn = false;
-                                    enemyPlayer.GetComponent<Player>().isTurn = true;
-                                    foreach (ShipCard ship in playerFleet)
-                                    {
-                                        ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                                        ship.shields++;
-                                    }
-                                    //other players turn
-                                }
-                            }
                         }
-                    }
-                    else if (isInRange)
-                    {
-                        //print("Current Weapon is: " + shipWeapons[weaponNum]);
-                        if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
-                        {
-                            fireWeapon(shipWeapons, distance);
-                        }
-                        else if (Input.GetKeyUp(KeyCode.LeftArrow))
-                        {
-                            if (enemyShipNum > 0)
-                            {
-                                enemyShipNum--;
-                            }
-                            else if (enemyShipNum == 0)
-                            {
-                                enemyShipNum = enemyFleet.Length - 1;
-                            }
-                            print("switching to previous ship");
-                        }
-                        else if (Input.GetKeyUp(KeyCode.RightArrow))
-                        {
-                            if (enemyShipNum < enemyFleet.Length - 1)
-                            {
-                                enemyShipNum++;
-                            }
-                            else if (enemyShipNum == enemyFleet.Length - 1)
-                            {
-                                enemyShipNum = 0;
-                            }
-                            print("switching to next ship");
-                        }
+                        print("switching to next ship");
                     }
                 }
             }
