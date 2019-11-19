@@ -21,6 +21,7 @@ public class ShipCard : MonoBehaviour
     public int turnMultiplier;
     public int minMoveMultiplier;
     public float maxMoveMultiplier;
+    public float turnDistance = 0;
 
     // Use this for initialization
     void Start()
@@ -33,6 +34,19 @@ public class ShipCard : MonoBehaviour
         turnMultiplier = 1;
         minMoveMultiplier = 1;
         maxMoveMultiplier = 1;
+
+
+        if (type == "Battleship")
+        {
+            turnDistance = 15;
+        }
+        else if (type == "Cruiser")
+        {
+            turnDistance = 10;
+        } else
+        {
+            turnDistance = 0;
+        }
     }
 
     // Update is called once per frame
