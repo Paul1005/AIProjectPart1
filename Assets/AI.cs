@@ -29,6 +29,7 @@ public class AI : MonoBehaviour
             if (player.phase[player.phaseNum] == "movement")
             {
                 float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[enemyShip].transform.position).magnitude;
+                print(distance);
                 if (!isEnemyShipMarked)
                 {
                     for (int i = 1; i < player.enemyFleet.Length; i++)
@@ -46,41 +47,45 @@ public class AI : MonoBehaviour
                     float angle = Vector3.SignedAngle(targetDir, player.playerFleet[player.shipNum].transform.up, Vector3.forward);
 
                     // Decision tree for movement
-                    if (distance < 3)
+                    if (distance < 6)
                     {
-                        if ((angle > 45 && angle < 135) || (angle < 325 && angle > 225))
+                        if (!firstMoveComplete)
                         {
-                            if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 2 / 10)
+                            if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].turnDistance / 10)
                             {
                                 player.moveForward();
                             }
                             else
                             {
-                                player.finishMovingShip();
-                                isEnemyShipMarked = false;
+                                firstMoveComplete = true;
+                            }
+                        }
+                        else if (!turnComplete)
+                        {
+                            if (player.playerFleet[player.shipNum].totalRotation < player.playerFleet[player.shipNum].turns && Mathf.Abs(angle) < 90)
+                            {
+                                if (angle > 0)
+                                {
+                                    player.turnLeft();
+                                }
+                                else if (angle < 0)
+                                {
+                                    player.turnRight();
+                                }
+                            } else
+                            {
+                                turnComplete = true;
                             }
                         }
                         else
                         {
-                            if (Mathf.Abs(angle - Vector3.Angle(targetDir, player.playerFleet[player.shipNum].transform.up)) < player.playerFleet[player.shipNum].turns)
-                            {
-                                player.turnLeft();
-                            }
-                            else
-                            {
-                                if ((player.playerFleet[player.shipNum].transform.position - player.playerFleet[player.shipNum].previousPosition).magnitude < player.playerFleet[player.shipNum].speed / 2 / 10)
-                                {
-                                    player.moveForward();
-                                }
-                                else
-                                {
-                                    player.finishMovingShip();
-                                    isEnemyShipMarked = false;
-                                }
-                            }
+                            player.finishMovingShip();
+                            isEnemyShipMarked = false;
+                            firstMoveComplete = false;
+                            turnComplete = false;
                         }
                     }
-                    else if (distance >= 3)
+                    else if (distance >= 6)
                     {
                         if (!firstMoveComplete)
                         {
