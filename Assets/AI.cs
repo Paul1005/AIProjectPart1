@@ -26,7 +26,18 @@ public class AI : MonoBehaviour
     {
         if (player.isTurn)
         {
-            if (player.phase[player.phaseNum] == "movement")
+            if (!player.playerFleet[player.shipNum].specialOrderChosen)
+            {
+
+                player.allAheadFull();
+
+                player.comeToNewHeading();
+
+                player.burnRetros();
+
+                player.lockOn();
+            }
+            else if (player.phase[player.phaseNum] == "movement")
             {
                 float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[enemyShip].transform.position).magnitude;
                 print(distance);
@@ -136,6 +147,41 @@ public class AI : MonoBehaviour
                             secondMoveComplete = false;
                         }
                     }
+                }
+            }
+            else if (player.phase[player.phaseNum] == "shooting")
+            {
+                WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
+                float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude;
+
+                //print("Current Weapon is: " + shipWeapons[weaponNum]);
+                if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
+                {
+                    player.fireWeapon(shipWeapons, distance);
+                }
+                else if (Input.GetKeyUp(KeyCode.LeftArrow))
+                {
+                    if (player.enemyShipNum > 0)
+                    {
+                        player.enemyShipNum--;
+                    }
+                    else if (player.enemyShipNum == 0)
+                    {
+                        player.enemyShipNum = player.enemyFleet.Length - 1;
+                    }
+                    print("switching to previous ship");
+                }
+                else if (Input.GetKeyUp(KeyCode.RightArrow))
+                {
+                    if (player.enemyShipNum < player.enemyFleet.Length - 1)
+                    {
+                        player.enemyShipNum++;
+                    }
+                    else if (player.enemyShipNum == player.enemyFleet.Length - 1)
+                    {
+                        player.enemyShipNum = 0;
+                    }
+                    print("switching to next ship");
                 }
             }
         }
