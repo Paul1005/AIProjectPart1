@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class AI : MonoBehaviour
@@ -28,14 +29,15 @@ public class AI : MonoBehaviour
         {
             if (!player.playerFleet[player.shipNum].specialOrderChosen)
             {
-
-                player.allAheadFull();
+                /*player.allAheadFull();
 
                 player.comeToNewHeading();
 
                 player.burnRetros();
 
-                player.lockOn();
+                player.lockOn();*/
+
+                player.noSpecialOrder();
             }
             else if (player.phase[player.phaseNum] == "movement")
             {
@@ -153,26 +155,28 @@ public class AI : MonoBehaviour
             {
                 WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
                 float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude;
-
+                string strFilePath = @"D:\Documents\Comp8901AIProject\MachineLearningTable.txt"; //change to system path at some point
+                //string strFilePath = "laptoppath";
+                string output = "test\ntest";
+                File.AppendAllText(strFilePath, output);
                 //print("Current Weapon is: " + shipWeapons[weaponNum]);
-                if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
+                bool fireWeapon = false;
+                //player.enemyFleet[player.enemyShipNum].hits;
+                for (int i = 0; i < player.enemyFleet.Length; i++)
+                {
+
+                    player.enemyShipNum = i;
+                    if (player.isInRange)
+                    {
+
+                    }
+                }
+                if (fireWeapon)
                 {
                     player.fireWeapon(shipWeapons, distance);
                 }
-                else if (Input.GetKeyUp(KeyCode.LeftArrow))
-                {
-                    if (player.enemyShipNum > 0)
-                    {
-                        player.enemyShipNum--;
-                    }
-                    else if (player.enemyShipNum == 0)
-                    {
-                        player.enemyShipNum = player.enemyFleet.Length - 1;
-                    }
-                    print("switching to previous ship");
-                }
-                else if (Input.GetKeyUp(KeyCode.RightArrow))
-                {
+                else if (fireWeapon)
+                
                     if (player.enemyShipNum < player.enemyFleet.Length - 1)
                     {
                         player.enemyShipNum++;

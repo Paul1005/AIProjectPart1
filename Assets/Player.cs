@@ -14,6 +14,9 @@ public class Player : MonoBehaviour
     public int phaseNum = 0;
     public int enemyShipNum = 0;
     public int weaponNum = 0;
+    public bool isInRange;
+    bool hasCheckedEnemyFleet = false;
+    int enemyShipInRangeNum = 0;
 
     // Use this for initialization
     void Start()
@@ -118,80 +121,93 @@ public class Player : MonoBehaviour
             else if (phase[phaseNum] == "shooting")
             {
                 WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
-                bool isInRange = false;
+                isInRange = false;
                 foreach (ShipCard ship in enemyFleet)
                 {
                     ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
                 }
-                enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-                float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
-                if (distance <= shipWeapons[weaponNum].range / 10)
-                {
-                    Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
-                    float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.forward);
-                    bool isInLeftArc = angle <= -45 && angle >= -135;
-                    bool isInRightArc = angle >= 45 && angle <= 135;
-                    bool isInFrontArc = angle >= -45 && angle <= 45;
 
-                    if (shipWeapons[weaponNum].fireArc == "Left")
+                List<int> enemyShipsInRange = new List<int>();
+
+                for (enemyShipNum = 0; enemyShipNum < enemyFleet.Length; enemyShipNum++)
+                {
+                    enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+
+                    float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
+                    if (distance <= shipWeapons[weaponNum].range / 10)
                     {
-                        if (isInLeftArc)
+                        Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
+                        float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.forward);
+                        bool isInLeftArc = angle <= -45 && angle >= -135;
+                        bool isInRightArc = angle >= 45 && angle <= 135;
+                        bool isInFrontArc = angle >= -45 && angle <= 45;
+
+                        if (shipWeapons[weaponNum].fireArc == "Left")
                         {
-                            isInRange = true;
+                            if (isInLeftArc)
+                            {
+                                isInRange = true;
+                            }
+                        }
+                        else if (shipWeapons[weaponNum].fireArc == "Right")
+                        {
+                            if (isInRightArc)
+                            {
+                                isInRange = true;
+                            }
+                        }
+                        else if (shipWeapons[weaponNum].fireArc == "Front")
+                        {
+                            if (isInFrontArc)
+                            {
+                                isInRange = true;
+                            }
+                        }
+                        else if (shipWeapons[weaponNum].fireArc == "Left/Front")
+                        {
+                            if (isInLeftArc || isInFrontArc)
+                            {
+                                isInRange = true;
+                            }
+                        }
+                        else if (shipWeapons[weaponNum].fireArc == "Front/Right")
+                        {
+                            if (isInFrontArc || isInRightArc)
+                            {
+                                isInRange = true;
+                            }
+                        }
+                        else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
+                        {
+                            if (isInLeftArc || isInFrontArc || isInRightArc)
+                            {
+                                isInRange = true;
+                            }
                         }
                     }
-                    else if (shipWeapons[weaponNum].fireArc == "Right")
+                    if (!isInRange)
                     {
-                        if (isInRightArc)
-                        {
-                            isInRange = true;
-                        }
+                        enemyShipsInRange.Add(enemyShipNum);
                     }
-                    else if (shipWeapons[weaponNum].fireArc == "Front")
+                    if(enemyShipNum == enemyFleet.Length)
                     {
-                        if (isInFrontArc)
-                        {
-                            isInRange = true;
-                        }
-                    }
-                    else if (shipWeapons[weaponNum].fireArc == "Left/Front")
-                    {
-                        if (isInLeftArc || isInFrontArc)
-                        {
-                            isInRange = true;
-                        }
-                    }
-                    else if (shipWeapons[weaponNum].fireArc == "Front/Right")
-                    {
-                        if (isInFrontArc || isInRightArc)
-                        {
-                            isInRange = true;
-                        }
-                    }
-                    else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
-                    {
-                        if (isInLeftArc || isInFrontArc || isInRightArc)
-                        {
-                            isInRange = true;
-                        }
+                        hasCheckedEnemyFleet = true;
                     }
                 }
-                if (!isInRange)
+
+                if(hasCheckedEnemyFleet)
                 {
-                    if (enemyShipNum < enemyFleet.Length - 1)
+                    if (enemyShipsInRange.Count == 0)
                     {
-                        enemyShipNum++;
-                    }
-                    else if (enemyShipNum == enemyFleet.Length - 1)
-                    {
-                        enemyShipNum = 0;
                         if (weaponNum < shipWeapons.Length - 1)
                         {
                             weaponNum++;
+                            enemyShipNum = 0;
                         }
                         else if (weaponNum == shipWeapons.Length - 1)
                         {
                             weaponNum = 0;
+                            enemyShipNum = 0;
                             if (shipNum < playerFleet.Length - 1)
                             {
                                 shipNum++;
@@ -211,37 +227,39 @@ public class Player : MonoBehaviour
                             }
                         }
                     }
-                }
-                else if (isInRange)
-                {
-                    //print("Current Weapon is: " + shipWeapons[weaponNum]);
-                    if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
+                    else if (enemyShipsInRange.Count > 0)
                     {
-                        fireWeapon(shipWeapons, distance);
-                    }
-                    else if (Input.GetKeyUp(KeyCode.LeftArrow))
-                    {
-                        if (enemyShipNum > 0)
+                        float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
+                        //print("Current Weapon is: " + shipWeapons[weaponNum]);
+
+                        if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                         {
-                            enemyShipNum--;
+                            fireWeapon(shipWeapons, distance);
                         }
-                        else if (enemyShipNum == 0)
+                        else if (Input.GetKeyUp(KeyCode.LeftArrow))
                         {
-                            enemyShipNum = enemyFleet.Length - 1;
+                            if (enemyShipInRangeNum > 0)
+                            {
+                                enemyShipInRangeNum--;
+                            }
+                            else if (enemyShipInRangeNum == 0)
+                            {
+                                enemyShipInRangeNum = enemyShipsInRange.Count - 1;
+                            }
+                            print("switching to previous ship");
                         }
-                        print("switching to previous ship");
-                    }
-                    else if (Input.GetKeyUp(KeyCode.RightArrow))
-                    {
-                        if (enemyShipNum < enemyFleet.Length - 1)
+                        else if (Input.GetKeyUp(KeyCode.RightArrow))
                         {
-                            enemyShipNum++;
+                            if (enemyShipInRangeNum < enemyFleet.Length - 1)
+                            {
+                                enemyShipInRangeNum++;
+                            }
+                            else if (enemyShipInRangeNum == enemyShipsInRange.Count - 1)
+                            {
+                                enemyShipInRangeNum = 0;
+                            }
+                            print("switching to next ship");
                         }
-                        else if (enemyShipNum == enemyFleet.Length - 1)
-                        {
-                            enemyShipNum = 0;
-                        }
-                        print("switching to next ship");
                     }
                 }
             }
