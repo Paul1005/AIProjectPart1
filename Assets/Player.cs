@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
     public int weaponNum = 0;
     public bool isInRange;
     bool hasCheckedEnemyFleet = false;
-    int enemyShipInRangeNum = 0;
+    public int enemyShipInRangeNum = 0;
 
     // Use this for initialization
     void Start()
@@ -229,6 +229,7 @@ public class Player : MonoBehaviour
                     }
                     else if (enemyShipsInRange.Count > 0)
                     {
+                        enemyShipNum = enemyShipsInRange[enemyShipInRangeNum];
                         float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
                         //print("Current Weapon is: " + shipWeapons[weaponNum]);
 
