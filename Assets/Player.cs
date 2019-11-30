@@ -189,7 +189,6 @@ public class Player : MonoBehaviour
                             isInRange = false;
                         }
 
-                        print(enemyShipsInRange.Count);
                         if (enemyShipNum == enemyFleet.Length - 1)
                         {
                             hasCheckedEnemyFleet = true;

@@ -42,7 +42,7 @@ public class AI : MonoBehaviour
             else if (player.phase[player.phaseNum] == "movement")
             {
                 float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[enemyShip].transform.position).magnitude;
-                print(distance);
+
                 if (!isEnemyShipMarked)
                 {
                     for (int i = 1; i < player.enemyFleet.Length; i++)
@@ -113,13 +113,13 @@ public class AI : MonoBehaviour
                         }
                         else if (!turnComplete)
                         {
-                            if (angle > 0 && player.playerFleet[player.shipNum].totalRotation < player.playerFleet[player.shipNum].turns)
+                            if (Mathf.Abs(angle) > 11.25 && player.playerFleet[player.shipNum].totalRotation < player.playerFleet[player.shipNum].turns)
                             {
-                                if (angle < 0)
+                                if (angle < -11.25)
                                 {
                                     player.turnLeft();
                                 }
-                                else if (angle > 0)
+                                else if (angle > 11.25)
                                 {
                                     player.turnRight();
                                 }
