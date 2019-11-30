@@ -175,7 +175,7 @@ public class AI : MonoBehaviour
                 {
                     player.fireWeapon(shipWeapons, distance);
                 }
-                else if (fireWeapon)
+                else if (fireWeapon) { 
                 
                     if (player.enemyShipNum < player.enemyFleet.Length - 1)
                     {

@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     public bool isInRange;
     bool hasCheckedEnemyFleet = false;
     public int enemyShipInRangeNum = 0;
+    List<int> enemyShipsInRange = new List<int>();
 
     // Use this for initialization
     void Start()
@@ -121,93 +122,93 @@ public class Player : MonoBehaviour
             else if (phase[phaseNum] == "shooting")
             {
                 WeaponCard[] shipWeapons = playerFleet[shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
-                isInRange = false;
-                foreach (ShipCard ship in enemyFleet)
+
+                if (!hasCheckedEnemyFleet)
                 {
-                    ship.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                }
-
-                List<int> enemyShipsInRange = new List<int>();
-
-                for (enemyShipNum = 0; enemyShipNum < enemyFleet.Length; enemyShipNum++)
-                {
-                    enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-
-                    float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
-                    if (distance <= shipWeapons[weaponNum].range / 10)
+                    isInRange = false;
+                    for (enemyShipNum = 0; enemyShipNum < enemyFleet.Length; enemyShipNum++)
                     {
-                        Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
-                        float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.forward);
-                        bool isInLeftArc = angle <= -45 && angle >= -135;
-                        bool isInRightArc = angle >= 45 && angle <= 135;
-                        bool isInFrontArc = angle >= -45 && angle <= 45;
+                        float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
+                        if (distance <= shipWeapons[weaponNum].range / 10)
+                        {
+                            Vector3 targetDir = enemyFleet[enemyShipNum].transform.position - playerFleet[shipNum].transform.position;
+                            float angle = Vector3.SignedAngle(targetDir, playerFleet[shipNum].transform.up, Vector3.forward);
+                            bool isInLeftArc = angle <= -45 && angle >= -135;
+                            bool isInRightArc = angle >= 45 && angle <= 135;
+                            bool isInFrontArc = angle >= -45 && angle <= 45;
+                            print(isInLeftArc);
+                            print(isInRightArc);
+                            print(shipWeapons[weaponNum].fireArc);
+                            if (shipWeapons[weaponNum].fireArc == "Left")
+                            {
+                                if (isInLeftArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                            else if (shipWeapons[weaponNum].fireArc == "Right")
+                            {
+                                if (isInRightArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                            else if (shipWeapons[weaponNum].fireArc == "Front")
+                            {
+                                if (isInFrontArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                            else if (shipWeapons[weaponNum].fireArc == "Left/Front")
+                            {
+                                if (isInLeftArc || isInFrontArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                            else if (shipWeapons[weaponNum].fireArc == "Front/Right")
+                            {
+                                if (isInFrontArc || isInRightArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                            else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
+                            {
+                                if (isInLeftArc || isInFrontArc || isInRightArc)
+                                {
+                                    isInRange = true;
+                                }
+                            }
+                        }
 
-                        if (shipWeapons[weaponNum].fireArc == "Left")
+                        if (isInRange)
                         {
-                            if (isInLeftArc)
-                            {
-                                isInRange = true;
-                            }
+                            enemyShipsInRange.Add(enemyShipNum);
+                            isInRange = false;
                         }
-                        else if (shipWeapons[weaponNum].fireArc == "Right")
+
+                        print(enemyShipsInRange.Count);
+                        if (enemyShipNum == enemyFleet.Length - 1)
                         {
-                            if (isInRightArc)
-                            {
-                                isInRange = true;
-                            }
-                        }
-                        else if (shipWeapons[weaponNum].fireArc == "Front")
-                        {
-                            if (isInFrontArc)
-                            {
-                                isInRange = true;
-                            }
-                        }
-                        else if (shipWeapons[weaponNum].fireArc == "Left/Front")
-                        {
-                            if (isInLeftArc || isInFrontArc)
-                            {
-                                isInRange = true;
-                            }
-                        }
-                        else if (shipWeapons[weaponNum].fireArc == "Front/Right")
-                        {
-                            if (isInFrontArc || isInRightArc)
-                            {
-                                isInRange = true;
-                            }
-                        }
-                        else if (shipWeapons[weaponNum].fireArc == "Left/Front/Right")
-                        {
-                            if (isInLeftArc || isInFrontArc || isInRightArc)
-                            {
-                                isInRange = true;
-                            }
+                            hasCheckedEnemyFleet = true;
                         }
                     }
-                    if (!isInRange)
-                    {
-                        enemyShipsInRange.Add(enemyShipNum);
-                    }
-                    if(enemyShipNum == enemyFleet.Length)
-                    {
-                        hasCheckedEnemyFleet = true;
-                    }
-                }
-
-                if(hasCheckedEnemyFleet)
+                } 
+                else if(hasCheckedEnemyFleet)
                 {
                     if (enemyShipsInRange.Count == 0)
                     {
+                        hasCheckedEnemyFleet = false;
+                        enemyShipNum = 0;
                         if (weaponNum < shipWeapons.Length - 1)
                         {
                             weaponNum++;
-                            enemyShipNum = 0;
                         }
                         else if (weaponNum == shipWeapons.Length - 1)
                         {
                             weaponNum = 0;
-                            enemyShipNum = 0;
                             if (shipNum < playerFleet.Length - 1)
                             {
                                 shipNum++;
@@ -230,15 +231,18 @@ public class Player : MonoBehaviour
                     else if (enemyShipsInRange.Count > 0)
                     {
                         enemyShipNum = enemyShipsInRange[enemyShipInRangeNum];
+
+                        enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
                         float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
                         //print("Current Weapon is: " + shipWeapons[weaponNum]);
-
                         if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                         {
+                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
                             fireWeapon(shipWeapons, distance);
                         }
                         else if (Input.GetKeyUp(KeyCode.LeftArrow))
                         {
+                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
                             if (enemyShipInRangeNum > 0)
                             {
                                 enemyShipInRangeNum--;
@@ -251,7 +255,8 @@ public class Player : MonoBehaviour
                         }
                         else if (Input.GetKeyUp(KeyCode.RightArrow))
                         {
-                            if (enemyShipInRangeNum < enemyFleet.Length - 1)
+                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                            if (enemyShipInRangeNum < enemyShipsInRange.Count - 1)
                             {
                                 enemyShipInRangeNum++;
                             }
@@ -269,6 +274,8 @@ public class Player : MonoBehaviour
 
     public void fireWeapon(WeaponCard[] shipWeapons, float distance)
     {
+        enemyShipsInRange.Clear();
+        hasCheckedEnemyFleet = false;
         float firepower = shipWeapons[weaponNum].firepower;
         int damage = 0;
         if (shipWeapons[weaponNum].type == "WeaponBattery")
