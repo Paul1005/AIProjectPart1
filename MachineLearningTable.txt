@@ -1,1 +1,0 @@
-﻿distance,type,hits,shield,damage,destroyed

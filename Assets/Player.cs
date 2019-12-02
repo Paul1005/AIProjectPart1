@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
     public bool isInRange;
     bool hasCheckedEnemyFleet = false;
     public int enemyShipInRangeNum = 0;
-    List<int> enemyShipsInRange = new List<int>();
+    public List<int> enemyShipsInRange = new List<int>();
 
     // Use this for initialization
     void Start()

@@ -11,6 +11,7 @@ public class AI : MonoBehaviour
     bool firstMoveComplete;
     bool turnComplete;
     bool secondMoveComplete;
+    List<Dictionary<string, string>> instances = new List<Dictionary<string, string>>();
     // Use this for initialization
     void Start()
     {
@@ -85,7 +86,8 @@ public class AI : MonoBehaviour
                                 {
                                     player.turnRight();
                                 }
-                            } else
+                            }
+                            else
                             {
                                 turnComplete = true;
                             }
@@ -154,40 +156,193 @@ public class AI : MonoBehaviour
             else if (player.phase[player.phaseNum] == "shooting")
             {
                 WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
-                float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude;
-                string strFilePath = @"D:\Documents\Comp8901AIProject\MachineLearningTable.txt"; //change to system path at some point
-                //string strFilePath = "laptoppath";
-                string output = "test\ntest";
-                File.AppendAllText(strFilePath, output);
-                //print("Current Weapon is: " + shipWeapons[weaponNum]);
-                bool fireWeapon = false;
-                //player.enemyFleet[player.enemyShipNum].hits;
-                for (int i = 0; i < player.enemyFleet.Length; i++)
+                string weaponType = shipWeapons[player.shipNum].type;
+                if (weaponType == "WeaponBattery")
                 {
 
-                    player.enemyShipNum = i;
-                    if (player.isInRange)
-                    {
-
-                    }
                 }
+                else if (weaponType == "LanceBattery")
+                {
+
+                }
+                float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude / 10;
+                string shipType = player.enemyFleet[player.enemyShipNum].type;
+                int initialHits = player.enemyFleet[player.enemyShipNum].hits;
+                int initialShields = player.enemyFleet[player.enemyShipNum].shields;
+                int firepower = shipWeapons[player.shipNum].firepower;
+                int armour = player.enemyFleet[player.enemyShipNum].armour;
+
+
+                bool fireWeapon = false;
+                Dictionary<string, string> newInstance = new Dictionary<string, string>();
+
+                string distanceString = "";
+
+                if (distance <= 1.5)
+                {
+                    distanceString = "near";
+                }
+                else if (distance > 1.5 && distance <= 3)
+                {
+                    distanceString = "middle";
+                }
+                else if (distance > 3)
+                {
+                    distanceString = "far";
+                }
+
+                newInstance.Add("distance", distanceString);
+                newInstance.Add("shipType", shipType);
+
+                string armourString = "";
+                if (armour == 6)
+                {
+                    armourString = "heavy";
+                }
+                else if (armour == 5)
+                {
+                    armourString = "medium";
+                }
+                else if (armour == 4)
+                {
+                    armourString = "light";
+                }
+
+                newInstance.Add("armour", armourString);
+
+                fireWeapon = naiveBayesClassifier(newInstance);
+
                 if (fireWeapon)
                 {
                     player.fireWeapon(shipWeapons, distance);
                 }
-                else if (fireWeapon) { 
-                
-                    if (player.enemyShipNum < player.enemyFleet.Length - 1)
+                else if (!fireWeapon)
+                {
+
+                    if (player.enemyShipNum < player.enemyShipsInRange.Count - 1)
                     {
-                        player.enemyShipNum++;
+                        player.enemyShipInRangeNum++;
                     }
-                    else if (player.enemyShipNum == player.enemyFleet.Length - 1)
+                    else if (player.enemyShipNum == player.enemyShipsInRange.Count - 1)
                     {
-                        player.enemyShipNum = 0;
+                        player.enemyShipInRangeNum = 0;
                     }
                     print("switching to next ship");
                 }
+
+                int finalHits = player.enemyFleet[player.enemyShipNum].hits;
+                int finalShields = player.enemyFleet[player.enemyShipNum].shields;
+
+                int totalDamage = (initialShields - finalShields) + (initialHits - finalHits);
+
+                float damagePercentage = totalDamage / firepower;
+
+                float threshold = 0.5f;
+
+                if (damagePercentage >= threshold)
+                {
+                    newInstance.Add("goodShot", "yes");
+                }
+                else
+                {
+                    newInstance.Add("goodShot", "no");
+                }
             }
+        }
+    }
+
+    bool naiveBayesClassifier(Dictionary<string, string> newInstance)
+    {
+        string distance;
+        newInstance.TryGetValue("distance", out distance);
+        string shipType;
+        newInstance.TryGetValue("shipType", out shipType);
+        string armour;
+        newInstance.TryGetValue("armour", out armour);
+
+        int totalSize = instances.Count;
+        int numYes = 0;
+        int numNo = 0;
+        int numDistYes = 0;
+        int numTypeYes = 0;
+        int numArmourYes = 0;
+        int numDistNo = 0;
+        int numTypeNo = 0;
+        int numArmourNo = 0;
+
+
+        if (totalSize == 0)
+        {
+            return true;
+        }
+        else
+        {
+            foreach (Dictionary<string, string> instance in instances)
+            {
+                string goodShot;
+                instance.TryGetValue("goodShot", out goodShot);
+                if (goodShot == "yes")
+                {
+                    numYes++;
+                    string whatDistance;
+                    instance.TryGetValue("distance", out whatDistance);
+                    if (distance == whatDistance)
+                    {
+                        numDistYes++;
+                    }
+
+                    string whatType;
+                    instance.TryGetValue("shipType", out whatType);
+                    if (shipType == whatType)
+                    {
+                        numTypeYes++;
+                    }
+
+                    string whatArmour;
+                    instance.TryGetValue("armour", out whatArmour);
+                    if (armour == whatArmour)
+                    {
+                        numArmourYes++;
+                    }
+                }
+                else if (goodShot == "no")
+                {
+                    numNo++;
+                    string whatDistance;
+                    instance.TryGetValue("distance", out whatDistance);
+                    if (distance == whatDistance)
+                    {
+                        numDistNo++;
+                    }
+
+                    string whatType;
+                    instance.TryGetValue("shipType", out whatType);
+                    if (shipType == whatType)
+                    {
+                        numTypeNo++;
+                    }
+
+                    string whatArmour;
+                    instance.TryGetValue("armour", out whatArmour);
+                    if (armour == whatArmour)
+                    {
+                        numArmourNo++;
+                    }
+                }
+            }
+            float probYes = numYes / totalSize;
+            float probNo = numNo / totalSize;
+            float probDistYes = numDistYes / totalSize;
+            float probDistNo = numDistNo / totalSize;
+            float probTypeYes = numTypeYes / totalSize;
+            float probTypeNo = numTypeNo / totalSize;
+            float probArmourYes = numArmourYes / totalSize;
+            float probArmourNo = numArmourNo / totalSize;
+
+            float newInstanceIsGood = probYes * probDistYes * probTypeYes * probArmourYes;
+            float newInstanceIsBad = probNo * probDistNo * probTypeNo * probArmourNo;
+
+            return newInstanceIsGood > newInstanceIsBad;
         }
     }
 }
