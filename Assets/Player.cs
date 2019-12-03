@@ -136,9 +136,7 @@ public class Player : MonoBehaviour
                             bool isInLeftArc = angle <= -45 && angle >= -135;
                             bool isInRightArc = angle >= 45 && angle <= 135;
                             bool isInFrontArc = angle >= -45 && angle <= 45;
-                            print(isInLeftArc);
-                            print(isInRightArc);
-                            print(shipWeapons[weaponNum].fireArc);
+
                             if (shipWeapons[weaponNum].fireArc == "Left")
                             {
                                 if (isInLeftArc)

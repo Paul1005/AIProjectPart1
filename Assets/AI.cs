@@ -7,7 +7,7 @@ using UnityEngine;
 public class AI : MonoBehaviour
 {
 
-    string path = @"D:\Documents\Comp8901AIProject\Assets";
+    string path = @"Assets\MachineLearningTable.txt";
     private Player player;
     bool isEnemyShipMarked;
     int enemyShip;
@@ -238,7 +238,7 @@ public class AI : MonoBehaviour
                                 }
                                 outputData(newInstance);
                             }
-                            else if (!fireWeapon && player.enemyShipInRangeNum < player.enemyShipsInRange.Count)
+                            else if (!fireWeapon && player.enemyShipInRangeNum < player.enemyShipsInRange.Count - 1)
                             {
                                 player.switchToNextShip();
                             }
@@ -281,7 +281,7 @@ public class AI : MonoBehaviour
         newInstance.TryGetValue("goodShot", out goodShot);
 
         string output = shipType + "," + distance + "," + armour + "," + goodShot;
-        File.WriteAllText(path, output);
+        File.AppendAllText(path, output);
     }
 
     bool naiveBayesClassifier(Dictionary<string, string> newInstance, List<Dictionary<string, string>> instances)
