@@ -158,95 +158,97 @@ public class AI : MonoBehaviour
             }
             else if (player.phase[player.phaseNum] == "shooting")
             {
-                string[] learningData = File.ReadAllLines(path);
-                List<Dictionary<string, string>> instances = inputData(learningData);
-
-                WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
-                string weaponType = shipWeapons[player.shipNum].type;
-
-                float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude / 10;
-                string shipType = player.enemyFleet[player.enemyShipNum].type;
-                int initialHits = player.enemyFleet[player.enemyShipNum].hits;
-                int initialShields = player.enemyFleet[player.enemyShipNum].shields;
-                int firepower = shipWeapons[player.shipNum].firepower;
-                int armour = player.enemyFleet[player.enemyShipNum].armour;
-
-                bool fireWeapon = false;
-
-                if (weaponType == "WeaponBattery")
+                if (player.hasCheckedEnemyFleet)
                 {
-                    Dictionary<string, string> newInstance = new Dictionary<string, string>();
-
-                    string distanceString = "";
-
-                    if (distance <= 1.5)
+                    if (player.enemyShipsInRange.Count > 0)
                     {
-                        distanceString = "near";
-                    }
-                    else if (distance > 1.5 && distance <= 3)
-                    {
-                        distanceString = "middle";
-                    }
-                    else if (distance > 3)
-                    {
-                        distanceString = "far";
-                    }
+                        string[] learningData = File.ReadAllLines(path);
+                        List<Dictionary<string, string>> instances = inputData(learningData);
 
-                    string armourString = "";
-                    if (armour == 6)
-                    {
-                        armourString = "heavy";
+                        WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
+                        string weaponType = shipWeapons[player.shipNum].type;
+
+                        float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude / 10;
+                        string shipType = player.enemyFleet[player.enemyShipNum].type;
+                        int initialHits = player.enemyFleet[player.enemyShipNum].hits;
+                        int initialShields = player.enemyFleet[player.enemyShipNum].shields;
+                        int firepower = shipWeapons[player.shipNum].firepower;
+                        int armour = player.enemyFleet[player.enemyShipNum].armour;
+
+                        bool fireWeapon;
+
+                        if (weaponType == "WeaponBattery")
+                        {
+                            Dictionary<string, string> newInstance = new Dictionary<string, string>();
+
+                            string distanceString = "";
+
+                            if (distance <= 1.5)
+                            {
+                                distanceString = "near";
+                            }
+                            else if (distance > 1.5 && distance <= 3)
+                            {
+                                distanceString = "middle";
+                            }
+                            else if (distance > 3)
+                            {
+                                distanceString = "far";
+                            }
+
+                            string armourString = "";
+                            if (armour == 6)
+                            {
+                                armourString = "heavy";
+                            }
+                            else if (armour == 5)
+                            {
+                                armourString = "medium";
+                            }
+                            else if (armour == 4)
+                            {
+                                armourString = "light";
+                            }
+
+                            newInstance.Add("distance", distanceString);
+                            newInstance.Add("shipType", shipType);
+                            newInstance.Add("armour", armourString);
+
+                            fireWeapon = naiveBayesClassifier(newInstance, instances);
+
+                            if (fireWeapon || player.enemyShipInRangeNum == player.enemyShipsInRange.Count - 1)
+                            {
+                                player.fireWeapon(shipWeapons, distance);
+                                int finalHits = player.enemyFleet[player.enemyShipNum].hits;
+                                int finalShields = player.enemyFleet[player.enemyShipNum].shields;
+
+                                int totalDamage = (initialShields - finalShields) + (initialHits - finalHits);
+
+                                float damagePercentage = totalDamage / firepower;
+
+                                float threshold = 0.25f;
+
+                                if (damagePercentage >= threshold)
+                                {
+                                    newInstance.Add("goodShot", "yes");
+                                }
+                                else
+                                {
+                                    newInstance.Add("goodShot", "no");
+                                }
+                                outputData(newInstance);
+                            }
+                            else if (!fireWeapon && player.enemyShipInRangeNum < player.enemyShipsInRange.Count)
+                            {
+                                player.switchToNextShip();
+                            }
+                        }
+                        else if (weaponType == "LanceBattery")
+                        {
+                            player.fireWeapon(shipWeapons, distance);
+                        }
                     }
-                    else if (armour == 5)
-                    {
-                        armourString = "medium";
-                    }
-                    else if (armour == 4)
-                    {
-                        armourString = "light";
-                    }
-
-                    newInstance.Add("distance", distanceString);
-                    newInstance.Add("shipType", shipType);
-                    newInstance.Add("armour", armourString);
-
-                    fireWeapon = naiveBayesClassifier(newInstance, instances);
-
-                    if (fireWeapon)
-                    {
-                        player.fireWeapon(shipWeapons, distance);
-                    }
-                    else if (!fireWeapon)
-                    {
-                        player.switchToNextShip();
-                    }
-
-                    int finalHits = player.enemyFleet[player.enemyShipNum].hits;
-                    int finalShields = player.enemyFleet[player.enemyShipNum].shields;
-
-                    int totalDamage = (initialShields - finalShields) + (initialHits - finalHits);
-
-                    float damagePercentage = totalDamage / firepower;
-
-                    float threshold = 0.5f;
-
-                    if (damagePercentage >= threshold)
-                    {
-                        newInstance.Add("goodShot", "yes");
-                    }
-                    else
-                    {
-                        newInstance.Add("goodShot", "no");
-                    }
-
-                    outputData(newInstance);
                 }
-                else if (weaponType == "LanceBattery")
-                {
-
-                }
-
-
             }
         }
     }

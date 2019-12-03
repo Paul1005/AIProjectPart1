@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     public int enemyShipNum = 0;
     public int weaponNum = 0;
     public bool isInRange;
-    bool hasCheckedEnemyFleet = false;
+    public bool hasCheckedEnemyFleet = false;
     public int enemyShipInRangeNum = 0;
     public List<int> enemyShipsInRange = new List<int>();
 
