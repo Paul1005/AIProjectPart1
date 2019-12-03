@@ -1,17 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 public class AI : MonoBehaviour
 {
+
+    string path = @"D:\Documents\Comp8901AIProject\Assets";
     private Player player;
     bool isEnemyShipMarked;
     int enemyShip;
     bool firstMoveComplete;
     bool turnComplete;
     bool secondMoveComplete;
-    List<Dictionary<string, string>> instances = new List<Dictionary<string, string>>();
+
     // Use this for initialization
     void Start()
     {
@@ -155,16 +158,12 @@ public class AI : MonoBehaviour
             }
             else if (player.phase[player.phaseNum] == "shooting")
             {
+                string[] learningData = File.ReadAllLines(path);
+                List<Dictionary<string, string>> instances = inputData(learningData);
+
                 WeaponCard[] shipWeapons = player.playerFleet[player.shipNum].gameObject.GetComponentsInChildren<WeaponCard>();
                 string weaponType = shipWeapons[player.shipNum].type;
-                if (weaponType == "WeaponBattery")
-                {
 
-                }
-                else if (weaponType == "LanceBattery")
-                {
-
-                }
                 float distance = (player.playerFleet[player.shipNum].transform.position - player.enemyFleet[player.enemyShipNum].transform.position).magnitude / 10;
                 string shipType = player.enemyFleet[player.enemyShipNum].type;
                 int initialHits = player.enemyFleet[player.enemyShipNum].hits;
@@ -172,86 +171,118 @@ public class AI : MonoBehaviour
                 int firepower = shipWeapons[player.shipNum].firepower;
                 int armour = player.enemyFleet[player.enemyShipNum].armour;
 
-
                 bool fireWeapon = false;
-                Dictionary<string, string> newInstance = new Dictionary<string, string>();
 
-                string distanceString = "";
+                if (weaponType == "WeaponBattery")
+                {
+                    Dictionary<string, string> newInstance = new Dictionary<string, string>();
 
-                if (distance <= 1.5)
-                {
-                    distanceString = "near";
-                }
-                else if (distance > 1.5 && distance <= 3)
-                {
-                    distanceString = "middle";
-                }
-                else if (distance > 3)
-                {
-                    distanceString = "far";
-                }
+                    string distanceString = "";
 
-                newInstance.Add("distance", distanceString);
-                newInstance.Add("shipType", shipType);
-
-                string armourString = "";
-                if (armour == 6)
-                {
-                    armourString = "heavy";
-                }
-                else if (armour == 5)
-                {
-                    armourString = "medium";
-                }
-                else if (armour == 4)
-                {
-                    armourString = "light";
-                }
-
-                newInstance.Add("armour", armourString);
-
-                fireWeapon = naiveBayesClassifier(newInstance);
-
-                if (fireWeapon)
-                {
-                    player.fireWeapon(shipWeapons, distance);
-                }
-                else if (!fireWeapon)
-                {
-
-                    if (player.enemyShipNum < player.enemyShipsInRange.Count - 1)
+                    if (distance <= 1.5)
                     {
-                        player.enemyShipInRangeNum++;
+                        distanceString = "near";
                     }
-                    else if (player.enemyShipNum == player.enemyShipsInRange.Count - 1)
+                    else if (distance > 1.5 && distance <= 3)
                     {
-                        player.enemyShipInRangeNum = 0;
+                        distanceString = "middle";
                     }
-                    print("switching to next ship");
+                    else if (distance > 3)
+                    {
+                        distanceString = "far";
+                    }
+
+                    string armourString = "";
+                    if (armour == 6)
+                    {
+                        armourString = "heavy";
+                    }
+                    else if (armour == 5)
+                    {
+                        armourString = "medium";
+                    }
+                    else if (armour == 4)
+                    {
+                        armourString = "light";
+                    }
+
+                    newInstance.Add("distance", distanceString);
+                    newInstance.Add("shipType", shipType);
+                    newInstance.Add("armour", armourString);
+
+                    fireWeapon = naiveBayesClassifier(newInstance, instances);
+
+                    if (fireWeapon)
+                    {
+                        player.fireWeapon(shipWeapons, distance);
+                    }
+                    else if (!fireWeapon)
+                    {
+                        player.switchToNextShip();
+                    }
+
+                    int finalHits = player.enemyFleet[player.enemyShipNum].hits;
+                    int finalShields = player.enemyFleet[player.enemyShipNum].shields;
+
+                    int totalDamage = (initialShields - finalShields) + (initialHits - finalHits);
+
+                    float damagePercentage = totalDamage / firepower;
+
+                    float threshold = 0.5f;
+
+                    if (damagePercentage >= threshold)
+                    {
+                        newInstance.Add("goodShot", "yes");
+                    }
+                    else
+                    {
+                        newInstance.Add("goodShot", "no");
+                    }
+
+                    outputData(newInstance);
                 }
-
-                int finalHits = player.enemyFleet[player.enemyShipNum].hits;
-                int finalShields = player.enemyFleet[player.enemyShipNum].shields;
-
-                int totalDamage = (initialShields - finalShields) + (initialHits - finalHits);
-
-                float damagePercentage = totalDamage / firepower;
-
-                float threshold = 0.5f;
-
-                if (damagePercentage >= threshold)
+                else if (weaponType == "LanceBattery")
                 {
-                    newInstance.Add("goodShot", "yes");
+
                 }
-                else
-                {
-                    newInstance.Add("goodShot", "no");
-                }
+
+
             }
         }
     }
 
-    bool naiveBayesClassifier(Dictionary<string, string> newInstance)
+    private List<Dictionary<string, string>> inputData(string[] learningData)
+    {
+        List<Dictionary<string, string>> instances = new List<Dictionary<string, string>>();
+        foreach (string line in learningData)
+        {
+            string[] splitLine = line.Split(',');
+            Dictionary<string, string> instance = new Dictionary<string, string>();
+            instance.Add("shipType", splitLine[0]);
+            instance.Add("distance", splitLine[1]);
+            instance.Add("armour", splitLine[2]);
+            instance.Add("goodShot", splitLine[3]);
+            instances.Add(instance);
+        }
+        return instances;
+    }
+
+    private void outputData(Dictionary<string, string> newInstance)
+    {
+        string shipType;
+        newInstance.TryGetValue("shipType", out shipType);
+        string distance;
+        newInstance.TryGetValue("distance", out distance);
+        string armour;
+        newInstance.TryGetValue("armour", out armour);
+        string goodShot;
+        newInstance.TryGetValue("goodShot", out goodShot);
+
+        string output = shipType + "," + distance + "," + armour + "," + goodShot;
+        File.WriteAllText(path, output);
+    }
+
+    bool naiveBayesClassifier(Dictionary<string, string> newInstance, List<Dictionary<string, string>> instances)
     {
         string distance;
         newInstance.TryGetValue("distance", out distance);

@@ -236,34 +236,15 @@ public class Player : MonoBehaviour
                         //print("Current Weapon is: " + shipWeapons[weaponNum]);
                         if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                         {
-                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
                             fireWeapon(shipWeapons, distance);
                         }
                         else if (Input.GetKeyUp(KeyCode.LeftArrow))
                         {
-                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                            if (enemyShipInRangeNum > 0)
-                            {
-                                enemyShipInRangeNum--;
-                            }
-                            else if (enemyShipInRangeNum == 0)
-                            {
-                                enemyShipInRangeNum = enemyShipsInRange.Count - 1;
-                            }
-                            print("switching to previous ship");
+                            switchToPreviousShip();
                         }
                         else if (Input.GetKeyUp(KeyCode.RightArrow))
                         {
-                            enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
-                            if (enemyShipInRangeNum < enemyShipsInRange.Count - 1)
-                            {
-                                enemyShipInRangeNum++;
-                            }
-                            else if (enemyShipInRangeNum == enemyShipsInRange.Count - 1)
-                            {
-                                enemyShipInRangeNum = 0;
-                            }
-                            print("switching to next ship");
+                            switchToNextShip();
                         }
                     }
                 }
@@ -271,8 +252,37 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void switchToNextShip()
+    {
+        enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+        if (enemyShipInRangeNum < enemyShipsInRange.Count - 1)
+        {
+            enemyShipInRangeNum++;
+        }
+        else if (enemyShipInRangeNum == enemyShipsInRange.Count - 1)
+        {
+            enemyShipInRangeNum = 0;
+        }
+        print("switching to next ship");
+    }
+
+    public void switchToPreviousShip()
+    {
+        enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+        if (enemyShipInRangeNum > 0)
+        {
+            enemyShipInRangeNum--;
+        }
+        else if (enemyShipInRangeNum == 0)
+        {
+            enemyShipInRangeNum = enemyShipsInRange.Count - 1;
+        }
+        print("switching to previous ship");
+    }
+
     public void fireWeapon(WeaponCard[] shipWeapons, float distance)
     {
+        enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
         enemyShipsInRange.Clear();
         hasCheckedEnemyFleet = false;
         float firepower = shipWeapons[weaponNum].firepower;

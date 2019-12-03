@@ -1,1 +1,1 @@
-﻿distance,shipType,firepower,weaponType,hits,shield,damage,destroyed,goodTarget
+﻿
