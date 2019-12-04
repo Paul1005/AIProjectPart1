@@ -162,6 +162,7 @@ public class AI : MonoBehaviour
                 {
                     if (player.enemyShipsInRange.Count > 0)
                     {
+                        player.enemyShipNum = player.enemyShipsInRange[player.enemyShipInRangeNum];
                         string[] learningData = File.ReadAllLines(path);
                         List<Dictionary<string, string>> instances = inputData(learningData);
 
@@ -280,7 +281,7 @@ public class AI : MonoBehaviour
         string goodShot;
         newInstance.TryGetValue("goodShot", out goodShot);
 
-        string output = shipType + "," + distance + "," + armour + "," + goodShot;
+        string output = shipType + "," + distance + "," + armour + "," + goodShot + "\n";
         File.AppendAllText(path, output);
     }
 

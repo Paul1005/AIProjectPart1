@@ -198,7 +198,7 @@ public class Player : MonoBehaviour
                     if (enemyShipsInRange.Count == 0)
                     {
                         hasCheckedEnemyFleet = false;
-                        enemyShipNum = 0;
+
                         if (weaponNum < shipWeapons.Length - 1)
                         {
                             weaponNum++;
@@ -228,9 +228,8 @@ public class Player : MonoBehaviour
                     else if (enemyShipsInRange.Count > 0)
                     {
                         enemyShipNum = enemyShipsInRange[enemyShipInRangeNum];
-
                         enemyFleet[enemyShipNum].gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-                        float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude;
+                        float distance = (playerFleet[shipNum].transform.position - enemyFleet[enemyShipNum].transform.position).magnitude / 10;
                         //print("Current Weapon is: " + shipWeapons[weaponNum]);
                         if (Input.GetKeyUp(KeyCode.KeypadEnter) || Input.GetKeyUp(KeyCode.Return))
                         {
