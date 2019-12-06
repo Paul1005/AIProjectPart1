@@ -334,7 +334,7 @@ public class Player : MonoBehaviour
             firepower = Mathf.CeilToInt(firepower);
             for (int i = 0; i < firepower; i++)
             {
-                if (Random.Range(1, 6) >= enemyFleet[enemyShipNum].armour)
+                if (Random.Range(1, 7) >= enemyFleet[enemyShipNum].armour)
                 {
                     damage++;
                 }
@@ -344,7 +344,7 @@ public class Player : MonoBehaviour
         {
             for (int i = 0; i < firepower; i++)
             {
-                if (Random.Range(1, 6) >= 4)
+                if (Random.Range(1, 7) >= 4)
                 {
                     damage++;
                 }
