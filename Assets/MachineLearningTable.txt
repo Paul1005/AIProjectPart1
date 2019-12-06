@@ -1,1 +1,6 @@
-﻿
+﻿Battleship,near,heavy,yes
+Cruiser,middle,medium,no
+Battleship,middle,heavy,no
+Escort,near,light,yes
+Escort,far,light,no
+Cruiser,near,medium,no

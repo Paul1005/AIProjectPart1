@@ -64,7 +64,7 @@ public class AI : MonoBehaviour
                     float angle = Vector3.SignedAngle(targetDir, player.playerFleet[player.shipNum].transform.up, Vector3.forward);
 
                     // Decision tree for movement
-                    if (distance < 6)
+                    if (distance < 3)
                     {
                         if (!firstMoveComplete)
                         {
@@ -103,7 +103,7 @@ public class AI : MonoBehaviour
                             turnComplete = false;
                         }
                     }
-                    else if (distance >= 6)
+                    else if (distance >= 3)
                     {
                         if (!firstMoveComplete)
                         {

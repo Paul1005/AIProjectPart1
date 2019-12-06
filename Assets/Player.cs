@@ -55,7 +55,7 @@ public class Player : MonoBehaviour
             {
                 if (!playerFleet[shipNum].specialOrderChosen)
                 {
-                    if (Input.GetKey(KeyCode.A))
+                   /* if (Input.GetKey(KeyCode.A))
                     {
                         allAheadFull();
                     }
@@ -72,9 +72,9 @@ public class Player : MonoBehaviour
                         lockOn();
                     }
                     else if (Input.GetKey(KeyCode.N))
-                    {
-                        noSpecialOrder();
-                    }
+                    {*/
+                    noSpecialOrder();
+                    //}
                 }
                 else
                 {
